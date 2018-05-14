@@ -1,0 +1,106 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "http://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = "1.0.0"
+def silentlib_version = "2.3.1"
+def buildNum = 0;
+group = "net.silentchaos512.equiptooltips"
+archivesBaseName = "EquipmentTooltips-1.12.2"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+minecraft {
+    version = "1.12.2-14.23.3.2669"
+    runDir = "eclipse"
+    
+    def versionFile = file('version.properties')
+    if (versionFile.canRead()) {
+        def Properties versionProps = new Properties()
+        
+        versionProps.load(new FileInputStream(versionFile))
+        
+        buildNum = versionProps['BUILD_NUM'].toInteger() + 1
+        
+        versionProps['BUILD_NUM'] = buildNum.toString()
+        versionProps.store(versionFile.newWriter(), null)
+    }
+
+    replace "@VERSION@", project.version
+    replace "SL_VERSION", silentlib_version
+    replace "BUILD_NUM = 0", "BUILD_NUM = " + buildNum
+
+    mappings = "snapshot_20171003"
+    useDepAts = true
+}
+
+repositories {
+    //mavenCentral()
+    maven {
+        name = "JEI"
+        url "http://dvs1.progwml6.com/files/maven"
+    }
+}
+
+jar {
+    classifier = buildNum
+    //manifest {
+    //    attributes("FMLCorePluginContainsFMLMod": "true", "FMLCorePlugin": "net.silentchaos512.scalinghealth.asm.SHLoadingPlugin")
+    //}
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = buildNum + '-sources'
+    from sourceSets.main.allSource
+}
+task deobfJar(type: Jar) {
+    from(sourceSets.main.output) {
+        classifier = buildNum + "-deobf"
+    }
+}
+
+artifacts {
+    archives sourcesJar
+    archives deobfJar
+}
+
+dependencies {
+    provided "org.projectlombok:lombok:1.16.8"
+}
+
+sourceSets {
+    main {
+        java { srcDirs = ["$projectDir/src/main/java"] }
+        resources { srcDirs = ["$projectDir/src/main/resources"] }
+    }
+}
+
+processResources
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+
+    rename '(.+_at.cfg)', 'META-INF/$1'
+}

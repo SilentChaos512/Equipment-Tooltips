@@ -1,0 +1,12 @@
+[
+{
+  "modid": "equipmenttooltips",
+  "name": "Equipment Tooltips",
+  "description": "Stat icons for equipment tooltips",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "TODO",
+  "authors": [ "SilentChaos512" ],
+  "credits": ""
+}
+]
