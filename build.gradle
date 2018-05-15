@@ -9,8 +9,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "1.0.0"
-def silentlib_version = "2.3.1"
+version = "1.0.1"
 def buildNum = 0;
 group = "net.silentchaos512.equiptooltips"
 archivesBaseName = "EquipmentTooltips-1.12.2"
@@ -35,7 +34,6 @@ minecraft {
     }
 
     replace "@VERSION@", project.version
-    replace "SL_VERSION", silentlib_version
     replace "BUILD_NUM = 0", "BUILD_NUM = " + buildNum
 
     mappings = "snapshot_20171003"

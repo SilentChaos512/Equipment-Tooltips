@@ -53,7 +53,7 @@ public class TooltipHandler extends Gui {
     if (hoveredStats.getItemType() == ItemType.ARMOR) {
       EntityEquipmentSlot slot = ((ItemArmor) stack.getItem()).armorType;
       for (ItemStack itemstack : mc.player.getArmorInventoryList())
-        if (((ItemArmor) itemstack.getItem()).armorType == slot)
+        if (!itemstack.isEmpty() && ((ItemArmor) itemstack.getItem()).armorType == slot)
           currentEquip = itemstack;
     } else {
       currentEquip = mc.player.getHeldItemMainhand();
