@@ -145,7 +145,6 @@ public class TooltipHandler extends Gui {
 
   private void renderBackground(RenderTooltipEvent.PostText event) {
 
-    final int backgroundColor = 0xC0100010;
     int left = event.getX() - 1 + Config.POSITION_X_OFFSET;
     int top = event.getY() - 17 + Config.POSITION_Y_OFFSET;
     int right = Math.max(event.getX() + lastWidth, event.getX() + event.getWidth() + 1) + Config.POSITION_X_OFFSET;
@@ -154,6 +153,6 @@ public class TooltipHandler extends Gui {
       top += event.getHeight() + 21;
       bottom += event.getHeight() + 21;
     }
-    drawRect(left, top, right, bottom, backgroundColor);
+    drawRect(left, top, right, bottom, Config.BACKGROUND_COLOR);
   }
 }

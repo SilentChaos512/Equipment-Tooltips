@@ -9,7 +9,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "1.0.1"
+version = "1.0.2"
 def buildNum = 0;
 group = "net.silentchaos512.equiptooltips"
 archivesBaseName = "EquipmentTooltips-1.12.2"
