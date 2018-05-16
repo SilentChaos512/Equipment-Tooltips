@@ -2,6 +2,8 @@ package net.silentchaos512.equiptooltips;
 
 import javax.annotation.Nullable;
 
+import org.lwjgl.input.Keyboard;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -35,6 +37,12 @@ public class TooltipHandler extends Gui {
 
   @SubscribeEvent(priority = EventPriority.LOWEST)
   public void onRenderTooltip(RenderTooltipEvent.PostText event) {
+
+    if (Config.DISPLAY_CHECK_KEY) {
+      boolean shiftPressed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+      if ((Config.DISPLAY_HIDE_ON_KEY && shiftPressed) || (!Config.DISPLAY_HIDE_ON_KEY && !shiftPressed))
+        return;
+    }
 
     ItemStack stack = event.getStack();
     if (stack.isEmpty())
