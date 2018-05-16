@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.silentchaos512.equiptooltips.EquipmentStats.ItemStat;
 import net.silentchaos512.equiptooltips.EquipmentStats.ItemType;
@@ -32,7 +33,7 @@ public class TooltipHandler extends Gui {
     this.isSilentsGemsLoaded = Loader.isModLoaded("silentgems");
   }
 
-  @SubscribeEvent
+  @SubscribeEvent(priority = EventPriority.LOWEST)
   public void onRenderTooltip(RenderTooltipEvent.PostText event) {
 
     ItemStack stack = event.getStack();
@@ -62,8 +63,10 @@ public class TooltipHandler extends Gui {
     EquipmentStats equippedStats = currentEquip.isEmpty() ? null : new EquipmentStats(currentEquip);
 
     double scale = 0.75;
-    int x = (int) (event.getX() / scale);
-    int y = (int) ((event.getY() - 16) / scale);
+    int x = (int) ((event.getX() + Config.POSITION_X_OFFSET) / scale);
+    int y = (int) ((event.getY() - 16 + Config.POSITION_Y_OFFSET) / scale);
+    if (Config.POSITION_ON_BOTTOM)
+      y += event.getHeight() / scale + 28;
 
     GlStateManager.pushMatrix();
     GlStateManager.color(1f, 1f, 1f, 1f);
@@ -135,10 +138,14 @@ public class TooltipHandler extends Gui {
   private void renderBackground(RenderTooltipEvent.PostText event) {
 
     final int backgroundColor = 0xC0100010;
-    int left = event.getX() - 1;
-    int top = event.getY() - 17;
-    int right = Math.max(event.getX() + lastWidth, event.getX() + event.getWidth() + 1);
-    int bottom = event.getY() - 4;
+    int left = event.getX() - 1 + Config.POSITION_X_OFFSET;
+    int top = event.getY() - 17 + Config.POSITION_Y_OFFSET;
+    int right = Math.max(event.getX() + lastWidth, event.getX() + event.getWidth() + 1) + Config.POSITION_X_OFFSET;
+    int bottom = event.getY() - 4 + Config.POSITION_Y_OFFSET;
+    if (Config.POSITION_ON_BOTTOM) {
+      top += event.getHeight() + 21;
+      bottom += event.getHeight() + 21;
+    }
     drawRect(left, top, right, bottom, backgroundColor);
   }
 }
