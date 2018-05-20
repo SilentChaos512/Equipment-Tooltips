@@ -9,6 +9,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -60,11 +61,15 @@ public class TooltipHandler extends Gui {
     // Get currently equipped item
     ItemStack currentEquip = ItemStack.EMPTY;
     if (hoveredStats.getItemType() == ItemType.ARMOR) {
+      // Armor slot (may not be "armor")
       EntityEquipmentSlot slot = ((ItemArmor) stack.getItem()).armorType;
-      for (ItemStack itemstack : mc.player.getArmorInventoryList())
-        if (!itemstack.isEmpty() && ((ItemArmor) itemstack.getItem()).armorType == slot)
+      for (ItemStack itemstack : mc.player.getArmorInventoryList()) {
+        Item item = itemstack.getItem();
+        if (!itemstack.isEmpty() && item instanceof ItemArmor && ((ItemArmor) item).armorType == slot)
           currentEquip = itemstack;
+      }
     } else {
+      // Tool or weapon
       currentEquip = mc.player.getHeldItemMainhand();
     }
 
