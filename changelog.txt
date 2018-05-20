@@ -1,4 +1,5 @@
 1.0.3
+Changed: Any harvest tool type (like sickles) should now display harvest speed
 Fixed: Crash when an item that is not "armor" is equipped in an armor slot
 
 1.0.2

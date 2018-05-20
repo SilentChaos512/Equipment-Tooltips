@@ -279,6 +279,8 @@ public class EquipmentStats {
       this.itemType = ItemType.SHOVEL;
     else if (item instanceof ItemSword || isTinkersWeapon)
       this.itemType = ItemType.SWORD;
+    else if (item instanceof ItemTool)
+      this.itemType = ItemType.GENERIC_HARVEST;
     else if (this.stack.isItemStackDamageable())
       this.itemType = ItemType.GENERIC_DAMAGEABLE;
     else
@@ -364,6 +366,7 @@ public class EquipmentStats {
     BOW("bow", DURABILITY, RANGED_DAMAGE, RANGED_SPEED),
     FISHING_ROD("fishing_rod", DURABILITY),
     GENERIC_DAMAGEABLE("generic_damageable", DURABILITY),
+    GENERIC_HARVEST("generic_harvest", DURABILITY, HARVEST_SPEED),
     HOE("hoe", DURABILITY),
     PICKAXE("pickaxe", DURABILITY, HARVEST_LEVEL, HARVEST_SPEED),
     SHEARS("shears", DURABILITY, HARVEST_SPEED),
