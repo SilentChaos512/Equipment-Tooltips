@@ -1,104 +1,345 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "1.0.2"
-def buildNum = 0;
-group = "net.silentchaos512.equiptooltips"
-archivesBaseName = "EquipmentTooltips-1.12.2"
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '2.0'
+    id 'maven'
+    id 'maven-publish'
+    id "com.jfrog.bintray" version "1.8.4"
+    id "com.matthewprenger.cursegradle" version "1.1.2"
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+
+repositories {
+    flatDir {
+        name "fileRepo"
+        dirs "repo"
+    }
+    mavenLocal()
+    jcenter()
+}
+
+lombok {
+    version = '1.18.4'
+    sha256 = ""
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs = ['-Xlint:deprecation']
+}
+
+javadoc {
+    failOnError = false
+}
+
+archivesBaseName = project.archivesBaseName
+def versionInfo = getModVersion()
+System.out.println(versionInfo)
+version = "${versionInfo['version']}"
+def build_num = getBuildNumber()
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    version = "1.12.2-14.23.3.2669"
-    runDir = "eclipse"
-    
-    def versionFile = file('version.properties')
-    if (versionFile.canRead()) {
-        def Properties versionProps = new Properties()
-        
-        versionProps.load(new FileInputStream(versionFile))
-        
-        buildNum = versionProps['BUILD_NUM'].toInteger() + 1
-        
-        versionProps['BUILD_NUM'] = buildNum.toString()
-        versionProps.store(versionFile.newWriter(), null)
+    mappings channel: "${project.mcp_channel}".toString(), version: "${project.mcp_mappings}".toString()
+
+    runs {
+        client = {
+            // recommended logging data for a userdev environment
+            properties 'forge.logging.markers': 'SCAN,REGISTRIES,REGISTRYDUMP'
+            // recommended logging level for the console
+            properties 'forge.logging.console.level': 'debug'
+            workingDirectory project.file('run').canonicalPath
+            source sourceSets.main
+        }
+        server = {
+            // recommended logging data for a userdev environment
+            properties 'forge.logging.markers': 'SCAN,REGISTRIES,REGISTRYDUMP'
+            // recommended logging level for the console
+            properties 'forge.logging.console.level': 'debug'
+            workingDirectory project.file('run').canonicalPath
+            source sourceSets.main
+        }
     }
-
-    replace "@VERSION@", project.version
-    replace "BUILD_NUM = 0", "BUILD_NUM = " + buildNum
-
-    mappings = "snapshot_20171003"
-    useDepAts = true
 }
 
 repositories {
-    //mavenCentral()
-    maven {
-        name = "JEI"
-        url "http://dvs1.progwml6.com/files/maven"
-    }
-}
-
-jar {
-    classifier = buildNum
-    //manifest {
-    //    attributes("FMLCorePluginContainsFMLMod": "true", "FMLCorePlugin": "net.silentchaos512.scalinghealth.asm.SHLoadingPlugin")
-    //}
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = buildNum + '-sources'
-    from sourceSets.main.allSource
-}
-task deobfJar(type: Jar) {
-    from(sourceSets.main.output) {
-        classifier = buildNum + "-deobf"
-    }
-}
-
-artifacts {
-    archives sourcesJar
-    archives deobfJar
+    jcenter()
+    mavenLocal()
 }
 
 dependencies {
-    provided "org.projectlombok:lombok:1.16.8"
+    minecraft "net.minecraftforge:forge:${project.forge_version}"
+
+    compile "net.silentchaos512:silent-gear:1.+"
 }
 
-sourceSets {
-    main {
-        java { srcDirs = ["$projectDir/src/main/java"] }
-        resources { srcDirs = ["$projectDir/src/main/resources"] }
+jar {
+    appendix = "${project.mc_version}"
+    manifest {
+        attributes(["Specification-Title": project.mod_id,
+                    "Specification-Vendor": "SilentChaos512",
+                    "Specification-Version": "25.0", // We are version 1 of the modlauncher specification
+                    "Implementation-Title": project.name,
+                    "Implementation-Version": "${version}",
+                    "Implementation-Vendor" :"SilentChaos512",
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
     }
 }
 
-processResources
-{
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-        
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-
-    rename '(.+_at.cfg)', 'META-INF/$1'
+task deobfJar(type: Jar) {
+    appendix = "${project.mc_version}"
+    classifier = 'deobf'
+    from sourceSets.main.output
 }
+
+task sourcesJar(type: Jar) {
+    appendix = "${project.mc_version}"
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    appendix = "${project.mc_version}"
+    classifier = 'javadoc'
+    from javadoc.getDestinationDir()
+}
+
+artifacts {
+    if (project.hasProperty('doDeobfJar')) {
+        archives deobfJar
+    }
+    if (project.hasProperty('doSourceJar')) {
+        archives sourcesJar
+    }
+    if (project.hasProperty('doJavadocJar')) {
+        archives javadocJar
+    }
+}
+
+class Secrets {
+    def data = null
+
+    def getProperty(String key) {
+        return data ? data[key] : ''
+    }
+}
+
+import groovy.json.JsonSlurper
+
+def secretFile
+if (System.getenv().SECRET_FILE) {
+    secretFile = file System.getenv().SECRET_FILE
+} else {
+    secretFile = file 'secret.json'
+}
+
+project.ext.secret = new Secrets()
+if (secretFile.exists()) {
+    secretFile.withReader {
+        project.ext.secret.data = new JsonSlurper().parse it
+    }
+}
+
+curseforge {
+    if (project.hasProperty('cf_project_id') && project.hasProperty('cf_release_type') && project.hasProperty('cf_changelog_filename') &&
+            ((project.cf_release_type == 'alpha') || (project.cf_release_type == 'beta') || (project.cf_release_type == 'release'))) {
+        apiKey = secret.curseforgeAPIKey
+        project {
+            id = project.cf_project_id
+            changelog = file(project.cf_changelog_filename)
+            releaseType = project.cf_release_type
+            addGameVersion(project.mc_version)
+            mainArtifact(jar) {
+//                displayName = "$project.description $display_version"
+                relations {
+                    requiredLibrary 'silent-lib'
+                }
+            }
+//            if (project.hasProperty('doAPIJar')) {
+//                addArtifact(apiJar) {
+//                    displayName = "$project.description $display_version API"
+//                }
+//            }
+//            if (project.hasProperty('doSourceJar')) {
+//                addArtifact(sourceJar) {
+//                    displayName = "$project.description $display_version Sources"
+//                }
+//            }
+//            if (project.hasProperty('doDeobfJar')) {
+//                addArtifact(deobfJar) {
+//                    displayName = "$project.description $display_version Development"
+//                }
+//            }
+//            if (project.hasProperty('doJavadocJar')) {
+//                addArtifact(javadocJar) {
+//                    displayName = "$project.description $display_version Javadoc"
+//                }
+//            }
+        }
+    }
+}
+
+// Bintray/Maven publishing
+
+publishing {
+    publications {
+        equipmentTooltips(MavenPublication) {
+            groupId 'net.silentchaos512'
+            artifactId 'equipment-tooltips'
+            version "${versionInfo['version_short']}".toString()
+
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    user = secret.BINTRAY_USER ?: System.getenv('BINTRAY_USER')
+    key = secret.BINTRAY_KEY ?: System.getenv('BINTRAY_KEY')
+    publications = ['equipmentTooltips']
+
+    pkg {
+        repo = 'equipment-tooltips'
+        name = "equipment-tooltips-${project.mc_version}"
+        licenses = ["LGPL-3.0"]
+        vcsUrl = 'https://github.com/SilentChaos512/Equipment-Tooltips.git'
+
+        version {
+            name = "${versionInfo['version_short']}".toString()
+            desc = "Equipment Tooltips (${project.mc_version}) ${versionInfo['version_short']}".toString()
+            released = new Date()
+            vcsTag = "v${versionInfo['version_short']}".toString()
+        }
+    }
+}
+
+// Version stuff
+
+def getModVersion() {
+    try {
+        return getGitVersion()
+    } catch (Exception ex) {
+        System.out.println("Git version failed, falling back to old method")
+        return getVersion('VERSION', getModFile())
+    }
+}
+
+def getGitVersion() {
+    // Call git command
+    def outStream = new ByteArrayOutputStream()
+    def result = exec {
+        executable = 'git'
+        args = [ 'describe', '--long' ]
+        standardOutput = outStream
+    }
+
+    def fullVersion = outStream.toString().trim()
+    def matcher = fullVersion =~ /(\d+).(\d+).(\d+)-(.*)/
+
+    def maj = matcher[0][1]
+    def min = matcher[0][2]
+    def rev = matcher[0][3]
+    def bn = getBuildNumber()
+
+    return makeVersionMap(maj, min, rev, bn, matcher[0][4])
+}
+
+static def makeVersionMap(maj, min, rev, bn, githash) {
+    def out = [:]
+    out['build.major.number'] = maj.toString()
+    out['build.minor.number'] = min.toString()
+    out['build.revision.number'] = rev.toString()
+    out['build.githash'] = githash
+    out['build.number'] = bn.toString()
+    out['version_short'] = "${maj}.${min}.${rev}".toString()
+    out['version'] = "${maj}.${min}.${rev}+${bn}".toString()
+    return out
+}
+
+// Modified old version getter
+def getVersion(String type, String mod_file) {
+    String maj = '0'
+    String min = '0'
+    String rev = '0'
+    String bn = getBuildNumber()
+
+    File file = file(mod_file)
+    def prefix = ~/^(?:public|protected|private) static final String $type = ".*$/
+    file.eachLine { String s ->
+        s = s.trim()
+        if (s ==~ prefix || prefix.matcher(s).matches()) {
+            String[] bits = s.split("=")
+            String interesting = bits[1].trim()
+            interesting = interesting.substring(1, interesting.length() - 2)
+            String[] pts = interesting.trim().split("\\.")
+
+            maj = pts[0] ?: '0'
+            min = pts[1] ?: '0'
+            rev = pts[2] ?: '0'
+        }
+    }
+
+    return makeVersionMap(maj, min, rev, bn, 'unknown')
+}
+
+// Used by old getVersion
+String getModFile() {
+    String path = ''
+    FileTree tree = fileTree(dir: 'src/main/java')
+    tree.include '**/*.java'
+    tree.visit { element ->
+        if (element.file.isFile()) {
+            element.file.eachLine { String s ->
+                s = s.trim()
+                if (s.startsWith('@Mod(')) {
+                    path = "src/main/java/$element.relativePath"
+                }
+            }
+        }
+    }
+    return path
+}
+
+// Build number tracking
+
+String getBuildNumber() {
+    def versionFile = file('version.properties')
+    if (versionFile.canRead()) {
+        Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionFile))
+        return versionProps['build_num'].toString()
+    }
+    return "1"
+}
+
+task incrementBuild {
+    doFirst {
+        def versionFile = file('version.properties')
+        if (versionFile.canRead()) {
+            Properties versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionFile))
+            def num = versionProps['build_num'].toInteger() + 1
+            println("incrementing BuildNumber to: " + num)
+            versionProps['build_num'] = num.toString()
+            versionProps.store(versionFile.newWriter(), null)
+        } else {
+            println("version.properties file not found! Ignoring.")
+        }
+    }
+}
+build.finalizedBy incrementBuild // only increment on successful builds

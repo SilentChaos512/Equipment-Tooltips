@@ -1,43 +1,59 @@
 package net.silentchaos512.equiptooltips;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-@Mod(modid = EquipmentTooltips.MOD_ID, name = EquipmentTooltips.MOD_NAME, version = EquipmentTooltips.VERSION, dependencies = EquipmentTooltips.DEPENDENCIES, guiFactory = "net.silentchaos512.equiptooltips.GuiFactoryET", clientSideOnly = true)
+import java.util.Optional;
+
+@Mod(EquipmentTooltips.MOD_ID)
 public class EquipmentTooltips {
+    public static final String MOD_ID = "equipmenttooltips";
+    public static final String MOD_NAME = "Equipment Tooltips";
+    public static final String VERSION = "1.1.0";
+    public static final String RESOURCE_PREFIX = MOD_ID + ":";
 
-  public static final String MOD_ID = "equipmenttooltips";
-  public static final String MOD_NAME = "Equipment Tooltips";
-  public static final String VERSION = "@VERSION@";
-  public static final int BUILD_NUM = 0;
-  public static final String DEPENDENCIES = "required-after:forge@[14.23.3.2655,);";
-  public static final String RESOURCE_PREFIX = MOD_ID + ":";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
-  @EventHandler
-  public void preInit(FMLPreInitializationEvent event) {
-
-    Config.init(event.getSuggestedConfigurationFile());
-    MinecraftForge.EVENT_BUS.register(this);
-    MinecraftForge.EVENT_BUS.register(TooltipHandler.instance);
-  }
-
-  @EventHandler
-  public void init(FMLInitializationEvent event) {
-
-    Config.save();
-  }
-
-  @SubscribeEvent
-  public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-
-    if (event.getModID().equalsIgnoreCase(EquipmentTooltips.MOD_ID)) {
-      Config.load();
-      Config.save();
+    public EquipmentTooltips() {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(EquipmentTooltips::onCommonSetup);
+            MinecraftForge.EVENT_BUS.register(TooltipHandler.INSTANCE);
+        });
     }
-  }
+
+    public static String getVersion() {
+        return getVersion(false);
+    }
+
+    public static String getVersion(boolean correctInDev) {
+        Optional<? extends ModContainer> o = ModList.get().getModContainerById(MOD_ID);
+        if (o.isPresent()) {
+            String str = o.get().getModInfo().getVersion().toString();
+            if (correctInDev && "NONE".equals(str))
+                return VERSION;
+            return str;
+        }
+        return "0.0.0";
+    }
+
+    public static boolean isDevBuild() {
+        // TODO: Is there a better way? Guess it works though...
+        String version = getVersion(false);
+        return "NONE".equals(version);
+    }
+
+    private static void onCommonSetup(FMLCommonSetupEvent event) {
+        SGearProxy.detectSilentGear();
+        if (SGearProxy.isLoaded()) {
+            ;
+        }
+    }
 }
