@@ -1,3 +1,9 @@
+## [1.1.1] - 2019-03-31
+### Added
+- Config file
+### Fixed
+- Log spam when Silent Gear is installed
+
 ## [1.1.0] - 2019-03-09
 - Ported to 1.13.2
 - Added Silent Gear support

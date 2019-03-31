@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.util.InputMappings;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
@@ -12,6 +13,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.silentchaos512.utils.MathUtils;
+import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 
@@ -27,15 +30,20 @@ public class TooltipHandler extends Gui {
         this.isTinkersLoaded = false; //Loader.isModLoaded("tconstruct");
     }
 
+    private static boolean isShiftDown() {
+        return InputMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)
+                || InputMappings.isKeyDown(GLFW.GLFW_KEY_RIGHT_SHIFT);
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onRenderTooltip(RenderTooltipEvent.PostText event) {
-        /*
-        if (Config.DISPLAY_CHECK_KEY) {
-            boolean shiftPressed = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-            if ((Config.DISPLAY_HIDE_ON_KEY && shiftPressed) || (!Config.DISPLAY_HIDE_ON_KEY && !shiftPressed))
+        if (Config.CLIENT.checkShiftKey.get()) {
+            boolean shiftPressed = isShiftDown();
+            boolean hideOnShift = Config.CLIENT.hideOnShift.get();
+            if ((hideOnShift && shiftPressed) || (!hideOnShift && !shiftPressed)) {
                 return;
+            }
         }
-        */
 
         ItemStack stack = event.getStack();
         if (stack.isEmpty()) return;
@@ -67,9 +75,9 @@ public class TooltipHandler extends Gui {
         EquipmentStats equippedStats = currentEquip.isEmpty() ? null : new EquipmentStats(currentEquip);
 
         double scale = 0.75;
-        int x = (int) ((event.getX() + Config.POSITION_X_OFFSET) / scale);
-        int y = (int) ((event.getY() - 16 + Config.POSITION_Y_OFFSET) / scale);
-        if (Config.POSITION_ON_BOTTOM) {
+        int x = (int) ((event.getX() + Config.CLIENT.offsetX.get()) / scale);
+        int y = (int) ((event.getY() - 16 + Config.CLIENT.offsetY.get()) / scale);
+        if (Config.CLIENT.positionOnBottom.get()) {
             y += event.getHeight() / scale + 28;
         }
 
@@ -133,20 +141,20 @@ public class TooltipHandler extends Gui {
     private static final String FORMAT_FLOAT = "%.2f";
 
     private static String formatStat(float value) {
-        if (value == (int) value)
+        if (MathUtils.doublesEqual(value, (int) value))
             return String.format(FORMAT_INT, (int) value);
         return String.format(FORMAT_FLOAT, value);
     }
 
     private void renderBackground(RenderTooltipEvent.PostText event) {
-        int left = event.getX() - 1 + Config.POSITION_X_OFFSET;
-        int top = event.getY() - 17 + Config.POSITION_Y_OFFSET;
-        int right = Math.max(event.getX() + lastWidth, event.getX() + event.getWidth() + 1) + Config.POSITION_X_OFFSET;
-        int bottom = event.getY() - 4 + Config.POSITION_Y_OFFSET;
-        if (Config.POSITION_ON_BOTTOM) {
+        int left = event.getX() - 1 + Config.CLIENT.offsetX.get();
+        int top = event.getY() - 17 + Config.CLIENT.offsetY.get();
+        int right = Math.max(event.getX() + lastWidth, event.getX() + event.getWidth() + 1) + Config.CLIENT.offsetX.get();
+        int bottom = event.getY() - 4 + Config.CLIENT.offsetY.get();
+        if (Config.CLIENT.positionOnBottom.get()) {
             top += event.getHeight() + 21;
             bottom += event.getHeight() + 21;
         }
-        drawRect(left, top, right, bottom, Config.BACKGROUND_COLOR);
+        drawRect(left, top, right, bottom, Config.CLIENT.backgroundColor.get());
     }
 }

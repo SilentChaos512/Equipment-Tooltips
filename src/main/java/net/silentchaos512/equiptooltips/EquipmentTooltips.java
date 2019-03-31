@@ -18,12 +18,12 @@ public class EquipmentTooltips {
     public static final String MOD_ID = "equipmenttooltips";
     public static final String MOD_NAME = "Equipment Tooltips";
     public static final String VERSION = "1.1.1";
-    public static final String RESOURCE_PREFIX = MOD_ID + ":";
 
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
     public EquipmentTooltips() {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            Config.init();
             FMLJavaModLoadingContext.get().getModEventBus().addListener(EquipmentTooltips::onCommonSetup);
             MinecraftForge.EVENT_BUS.register(TooltipHandler.INSTANCE);
         });
@@ -45,9 +45,7 @@ public class EquipmentTooltips {
     }
 
     public static boolean isDevBuild() {
-        // TODO: Is there a better way? Guess it works though...
-        String version = getVersion(false);
-        return "NONE".equals(version);
+        return "NONE".equals(getVersion(false));
     }
 
     private static void onCommonSetup(FMLCommonSetupEvent event) {

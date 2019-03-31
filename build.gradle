@@ -79,12 +79,27 @@ repositories {
     mavenLocal()
 }
 
+configurations {
+    // Dependencies to pack into the jar
+    extraLibs
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${project.forge_version}"
 
     compile("net.silentchaos512:silent-gear:1.+") {
         exclude module: "RoughlyEnoughItems"
     }
+
+    extraLibs("net.silentchaos512:silent-utils:1.+") {
+        exclude module: 'guava'
+        exclude module: 'gson'
+        exclude module: 'log4j-core'
+        exclude module: 'log4j-api'
+        exclude module: 'jsr305'
+    }
+
+    configurations.implementation.extendsFrom(configurations.extraLibs)
 }
 
 jar {
@@ -98,12 +113,27 @@ jar {
                     "Implementation-Vendor" :"SilentChaos512",
                     "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
     }
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 task deobfJar(type: Jar) {
     appendix = "${project.mc_version}"
     classifier = 'deobf'
     from sourceSets.main.output
+    manifest {
+        attributes(["Specification-Title": project.mod_id,
+                    "Specification-Vendor": "SilentChaos512",
+                    "Specification-Version": "25.0", // We are version 1 of the modlauncher specification
+                    "Implementation-Title": project.name,
+                    "Implementation-Version": "${version}",
+                    "Implementation-Vendor" :"SilentChaos512",
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
+    }
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 task sourcesJar(type: Jar) {
