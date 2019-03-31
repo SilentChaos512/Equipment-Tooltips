@@ -17,7 +17,7 @@ import java.util.Optional;
 public class EquipmentTooltips {
     public static final String MOD_ID = "equipmenttooltips";
     public static final String MOD_NAME = "Equipment Tooltips";
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.1.1";
     public static final String RESOURCE_PREFIX = MOD_ID + ":";
 
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
@@ -52,8 +52,5 @@ public class EquipmentTooltips {
 
     private static void onCommonSetup(FMLCommonSetupEvent event) {
         SGearProxy.detectSilentGear();
-        if (SGearProxy.isLoaded()) {
-            ;
-        }
     }
 }

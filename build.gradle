@@ -82,7 +82,9 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.forge_version}"
 
-    compile "net.silentchaos512:silent-gear:1.+"
+    compile("net.silentchaos512:silent-gear:1.+") {
+        exclude module: "RoughlyEnoughItems"
+    }
 }
 
 jar {

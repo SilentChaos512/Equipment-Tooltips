@@ -143,7 +143,7 @@ public class EquipmentStats {
     private static float getMagicDamage(ItemStack stack) {
         if (SGearProxy.isMainPart(stack))
             return SGearProxy.getStat(stack, ItemStat.MAGIC_DAMAGE.silentGearStat);
-        return SGearProxy.getMagicDamageStat(stack);
+        return 0;
     }
 
     private static float getMeleeSpeed(ItemStack stack) {

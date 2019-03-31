@@ -1,4 +1,4 @@
-## [1.1.0]
+## [1.1.0] - 2019-03-09
 - Ported to 1.13.2
 - Added Silent Gear support
 - Tinkers Construct support disabled (as it does not exist yet)
