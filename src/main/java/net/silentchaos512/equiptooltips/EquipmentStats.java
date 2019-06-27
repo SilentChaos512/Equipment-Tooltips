@@ -2,13 +2,14 @@ package net.silentchaos512.equiptooltips;
 
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.*;
 import net.minecraftforge.common.ToolType;
+import net.minecraftforge.common.extensions.IForgeItem;
 
 import javax.annotation.Nonnull;
 import java.util.Map.Entry;
@@ -18,8 +19,7 @@ import java.util.UUID;
 public class EquipmentStats {
     private final ItemStack stack;
 
-    @Getter
-    private ItemType itemType = ItemType.UNKNOWN;
+    @Getter private ItemType itemType = ItemType.UNKNOWN;
 
     @Getter private final float armorProtection;
     @Getter private final float armorToughness;
@@ -70,15 +70,14 @@ public class EquipmentStats {
 //        if (TooltipHandler.instance.isTinkersLoaded && item instanceof slimeknights.tconstruct.library.tools.ToolCore)
 //            return slimeknights.tconstruct.library.utils.ToolHelper.getHarvestLevelStat(stack);
 
-        if (!(item instanceof ItemTool))
+        if (!(item instanceof ToolItem))
             return -1;
 
-        ItemTool itemTool = (ItemTool) item;
-        IBlockState state = getBlockForTool(stack);
+        BlockState state = getBlockForTool(stack);
         int maxLevel = -1;
         // This doesn't work with all modded tools, but most.
-        for (ToolType toolClass : itemTool.getToolTypes(stack)) {
-            int harvestLevel = itemTool.getHarvestLevel(stack, toolClass, null, state);
+        for (ToolType toolClass : ((IForgeItem) item).getToolTypes(stack)) {
+            int harvestLevel = ((IForgeItem) item).getHarvestLevel(stack, toolClass, null, state);
             maxLevel = Math.max(maxLevel, harvestLevel);
         }
         return maxLevel;
@@ -94,7 +93,7 @@ public class EquipmentStats {
 //            return slimeknights.tconstruct.library.utils.ToolHelper.getMiningSpeedStat(stack);
 
         // Get an appropriate blockstate for the tool (assume stone if class is unknown).
-        IBlockState state = getBlockForTool(stack);
+        BlockState state = getBlockForTool(stack);
 
         try {
             return item.getDestroySpeed(stack, state);
@@ -103,17 +102,17 @@ public class EquipmentStats {
         }
     }
 
-    private static IBlockState getBlockForTool(ItemStack stack) {
-        IBlockState state;
+    private static BlockState getBlockForTool(ItemStack stack) {
+        BlockState state;
         Item item = stack.getItem();
         Set<ToolType> toolClasses = item.getToolTypes(stack);
 
         //noinspection ChainOfInstanceofChecks
-        if (item instanceof ItemSpade || toolClasses.contains(ToolType.SHOVEL))
+        if (item instanceof ShovelItem || toolClasses.contains(ToolType.SHOVEL))
             state = Blocks.DIRT.getDefaultState();
-        else if (item instanceof ItemAxe || toolClasses.contains(ToolType.AXE))
+        else if (item instanceof AxeItem || toolClasses.contains(ToolType.AXE))
             state = Blocks.OAK_LOG.getDefaultState();
-        else if (item instanceof ItemShears)
+        else if (item instanceof ShearsItem)
             state = Blocks.WHITE_WOOL.getDefaultState();
         else
             state = Blocks.STONE.getDefaultState();
@@ -128,7 +127,7 @@ public class EquipmentStats {
         if (SGearProxy.isMainPart(stack))
             return SGearProxy.getStat(stack, ItemStat.MELEE_DAMAGE.silentGearStat);
 
-        Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(EntityEquipmentSlot.MAINHAND);
+        Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(EquipmentSlotType.MAINHAND);
 
         for (Entry<String, AttributeModifier> entry : multimap.entries()) {
             AttributeModifier mod = entry.getValue();
@@ -151,7 +150,7 @@ public class EquipmentStats {
             return SGearProxy.getStat(stack, ItemStat.MELEE_SPEED.silentGearStat);
 
         Multimap<String, AttributeModifier> multimap = stack
-                .getAttributeModifiers(EntityEquipmentSlot.MAINHAND);
+                .getAttributeModifiers(EquipmentSlotType.MAINHAND);
 
         for (Entry<String, AttributeModifier> entry : multimap.entries()) {
             AttributeModifier mod = entry.getValue();
@@ -174,10 +173,10 @@ public class EquipmentStats {
         if (SGearProxy.isMainPart(stack))
             return SGearProxy.getStat(stack, ItemStat.ARMOR_PROTECTION.silentGearStat);
 
-        if (!(stack.getItem() instanceof ItemArmor)) return 0;
+        if (!(stack.getItem() instanceof ArmorItem)) return 0;
 
-        ItemArmor itemArmor = (ItemArmor) stack.getItem();
-        EntityEquipmentSlot slot = itemArmor.getEquipmentSlot();
+        ArmorItem armorItem = (ArmorItem) stack.getItem();
+        EquipmentSlotType slot = armorItem.getEquipmentSlot();
         UUID uuid = ARMOR_MODIFIERS[slot.getIndex()];
 
         Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(slot);
@@ -197,10 +196,10 @@ public class EquipmentStats {
         if (SGearProxy.isMainPart(stack))
             return SGearProxy.getStat(stack, ItemStat.ARMOR_TOUGHNESS.silentGearStat);
 
-        if (!(stack.getItem() instanceof ItemArmor)) return 0f;
+        if (!(stack.getItem() instanceof ArmorItem)) return 0f;
 
-        ItemArmor itemArmor = (ItemArmor) stack.getItem();
-        EntityEquipmentSlot slot = itemArmor.getEquipmentSlot();
+        ArmorItem armorItem = (ArmorItem) stack.getItem();
+        EquipmentSlotType slot = armorItem.getEquipmentSlot();
         UUID uuid = ARMOR_MODIFIERS[slot.getIndex()];
 
         Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(slot);
@@ -223,7 +222,7 @@ public class EquipmentStats {
 
         if (SGearProxy.isGearRangedWeapon(stack))
             return SGearProxy.getRangedDamage(stack);
-        if (stack.getItem() instanceof ItemBow)
+        if (stack.getItem() instanceof BowItem)
             return 2;
         return 0;
     }
@@ -234,7 +233,7 @@ public class EquipmentStats {
 
         if (SGearProxy.isGearRangedWeapon(stack))
             return SGearProxy.getRangedSpeed(stack);
-        if (stack.getItem() instanceof ItemBow)
+        if (stack.getItem() instanceof BowItem)
             return 1;
         return 0;
     }
@@ -255,27 +254,27 @@ public class EquipmentStats {
         // Get item type
         if (SGearProxy.isMainPart(stack))
             this.itemType = ItemType.SGEAR_PART;
-        else if (item instanceof ItemPickaxe || toolTypes.contains(ToolType.PICKAXE) || isTinkersHarvestTool)
+        else if (item instanceof PickaxeItem || toolTypes.contains(ToolType.PICKAXE) || isTinkersHarvestTool)
             this.itemType = ItemType.PICKAXE;
-        else if (item instanceof ItemSpade || toolTypes.contains(ToolType.SHOVEL))
+        else if (item instanceof ShovelItem || toolTypes.contains(ToolType.SHOVEL))
             this.itemType = ItemType.SHOVEL;
-        else if (item instanceof ItemAxe || toolTypes.contains(ToolType.AXE))
+        else if (item instanceof AxeItem || toolTypes.contains(ToolType.AXE))
             this.itemType = ItemType.AXE;
-        else if (item instanceof ItemSword || isTinkersWeapon)
+        else if (item instanceof SwordItem || isTinkersWeapon)
             this.itemType = ItemType.SWORD;
-        else if (item instanceof ItemBow || isTinkersBow)
+        else if (item instanceof BowItem || isTinkersBow)
             this.itemType = ItemType.BOW;
-        else if (item instanceof ItemArmor)
+        else if (item instanceof ArmorItem)
             this.itemType = ItemType.ARMOR;
-        else if (item instanceof ItemHoe)
+        else if (item instanceof HoeItem)
             this.itemType = ItemType.HOE;
-        else if (item instanceof ItemFishingRod)
+        else if (item instanceof FishingRodItem)
             this.itemType = ItemType.FISHING_ROD;
-        else if (item instanceof ItemShears)
+        else if (item instanceof ShearsItem)
             this.itemType = ItemType.SHEARS;
 //        else if (item instanceof ItemShield)
 //            this.itemType = ItemType.SHIELD;
-        else if (item instanceof ItemTool)
+        else if (item instanceof ToolItem)
             this.itemType = ItemType.GENERIC_HARVEST;
         else if (this.stack.isDamageable())
             this.itemType = ItemType.GENERIC_DAMAGEABLE;

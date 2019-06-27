@@ -5,7 +5,7 @@ import net.silentchaos512.gear.api.item.ICoreItem;
 import net.silentchaos512.gear.api.item.ICoreRangedWeapon;
 import net.silentchaos512.gear.api.parts.MaterialGrade;
 import net.silentchaos512.gear.api.parts.PartType;
-import net.silentchaos512.gear.api.stats.CommonItemStats;
+import net.silentchaos512.gear.api.stats.ItemStats;
 import net.silentchaos512.gear.api.stats.ItemStat;
 import net.silentchaos512.gear.parts.PartData;
 import net.silentchaos512.gear.util.GearData;
@@ -41,15 +41,15 @@ final class SGearCompat {
     }
 
     static float getMagicDamageStat(ItemStack stack) {
-        return GearData.getStat(stack, CommonItemStats.MAGIC_DAMAGE);
+        return GearData.getStat(stack, ItemStats.MAGIC_DAMAGE);
     }
 
     static float getRangedDamage(ItemStack stack) {
-        return GearData.getStat(stack, CommonItemStats.RANGED_DAMAGE);
+        return GearData.getStat(stack, ItemStats.RANGED_DAMAGE);
     }
 
     public static float getRangedSpeed(ItemStack stack) {
-        return GearData.getStat(stack, CommonItemStats.RANGED_SPEED);
+        return GearData.getStat(stack, ItemStats.RANGED_SPEED);
     }
 
     public static float getStat(ItemStack stack, Supplier<Supplier<ItemStat>> stat) {

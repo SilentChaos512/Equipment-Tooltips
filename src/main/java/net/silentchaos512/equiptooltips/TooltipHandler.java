@@ -1,13 +1,13 @@
 package net.silentchaos512.equiptooltips;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.util.InputMappings;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderTooltipEvent;
@@ -18,7 +18,7 @@ import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 
-public class TooltipHandler extends Gui {
+public class TooltipHandler extends AbstractGui {
     public static final ResourceLocation TEXTURE = new ResourceLocation(EquipmentTooltips.MOD_ID, "textures/gui/hud.png");
 
     public static final TooltipHandler INSTANCE = new TooltipHandler();
@@ -31,8 +31,8 @@ public class TooltipHandler extends Gui {
     }
 
     private static boolean isShiftDown() {
-        return InputMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)
-                || InputMappings.isKeyDown(GLFW.GLFW_KEY_RIGHT_SHIFT);
+        long handle = Minecraft.getInstance().mainWindow.getHandle();
+        return InputMappings.isKeyDown(handle, GLFW.GLFW_KEY_LEFT_SHIFT) || InputMappings.isKeyDown(handle, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -60,10 +60,10 @@ public class TooltipHandler extends Gui {
         ItemStack currentEquip = ItemStack.EMPTY;
         if (hoveredStats.getItemType() == ItemType.ARMOR) {
             // Armor slot (may not be "armor")
-            EntityEquipmentSlot slot = ((ItemArmor) stack.getItem()).getEquipmentSlot();
+            EquipmentSlotType slot = ((ArmorItem) stack.getItem()).getEquipmentSlot();
             for (ItemStack itemstack : mc.player.getArmorInventoryList()) {
                 Item item = itemstack.getItem();
-                if (!itemstack.isEmpty() && item instanceof ItemArmor && ((ItemArmor) item).getEquipmentSlot() == slot) {
+                if (!itemstack.isEmpty() && item instanceof ArmorItem && ((ArmorItem) item).getEquipmentSlot() == slot) {
                     currentEquip = itemstack;
                 }
             }
@@ -105,7 +105,7 @@ public class TooltipHandler extends Gui {
         mc.textureManager.bindTexture(TEXTURE);
 
         // Draw stat icon
-        drawTexturedModalRect(x, y, 16 * stat.iconIndex, 240, 16, 16);
+        blit(x, y, 16 * stat.iconIndex, 240, 16, 16);
         x += 18;
 
         float hoveredStat = hovered.getStat(stat);
@@ -122,15 +122,15 @@ public class TooltipHandler extends Gui {
             x += 5;
         } else if (hoveredStat > equippedStat) {
             // Up arrow
-            drawTexturedModalRect(x, y, 224, 240, 16, 16);
+            blit(x, y, 224, 240, 16, 16);
             x += 18;
         } else if (hoveredStat < equippedStat) {
             // Down arrow
-            drawTexturedModalRect(x, y, 240, 240, 16, 16);
+            blit(x, y, 240, 240, 16, 16);
             x += 18;
         } else {
             // Dash
-            drawTexturedModalRect(x, y, 208, 240, 16, 16);
+            blit(x, y, 208, 240, 16, 16);
             x += 18;
         }
 
@@ -155,6 +155,6 @@ public class TooltipHandler extends Gui {
             top += event.getHeight() + 21;
             bottom += event.getHeight() + 21;
         }
-        drawRect(left, top, right, bottom, Config.CLIENT.backgroundColor.get());
+        fill(left, top, right, bottom, Config.CLIENT.backgroundColor.get());
     }
 }

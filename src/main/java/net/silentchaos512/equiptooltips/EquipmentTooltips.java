@@ -17,7 +17,7 @@ import java.util.Optional;
 public class EquipmentTooltips {
     public static final String MOD_ID = "equipmenttooltips";
     public static final String MOD_NAME = "Equipment Tooltips";
-    public static final String VERSION = "1.1.1";
+    public static final String VERSION = "1.2.0";
 
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
