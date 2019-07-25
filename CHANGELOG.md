@@ -1,3 +1,7 @@
+## [1.3.1] - 2019-07-25
+- Updated to 1.14.4 (should still work on 1.14.3)
+- Fix harvest level not showing on tools in some cases
+
 ## [1.3.0] - 2019-07-01
 Updated to 1.14.3
 

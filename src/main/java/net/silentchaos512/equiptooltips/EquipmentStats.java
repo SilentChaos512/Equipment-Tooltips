@@ -73,11 +73,11 @@ public class EquipmentStats {
         if (!(item instanceof ToolItem))
             return -1;
 
-        BlockState state = getBlockForTool(stack);
+//        BlockState state = getBlockForTool(stack);
         int maxLevel = -1;
         // This doesn't work with all modded tools, but most.
         for (ToolType toolClass : ((IForgeItem) item).getToolTypes(stack)) {
-            int harvestLevel = ((IForgeItem) item).getHarvestLevel(stack, toolClass, null, state);
+            int harvestLevel = ((IForgeItem) item).getHarvestLevel(stack, toolClass, null, null);
             maxLevel = Math.max(maxLevel, harvestLevel);
         }
         return maxLevel;
