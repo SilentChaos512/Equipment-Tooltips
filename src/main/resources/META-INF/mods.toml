@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[27,)"
+loaderVersion="[31,)"
 issueTrackerURL="https://github.com/SilentChaos512/Equipment-Tooltips/issues"
 displayURL="https://minecraft.curseforge.com/projects/equipment-tooltips"
 logoFile="logo.png"
@@ -17,12 +17,12 @@ authors="SilentChaos512"
 [[dependencies.equipmenttooltips]]
     modId="forge"
     mandatory=true
-    versionRange="[27,)"
+    versionRange="[31,)"
     ordering="NONE"
     side="CLIENT"
 [[dependencies.equipmenttooltips]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.14.3,1.14.4]"
+    versionRange="[1.15.2]"
     ordering="NONE"
     side="CLIENT"

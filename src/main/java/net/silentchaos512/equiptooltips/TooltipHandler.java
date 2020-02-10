@@ -31,7 +31,7 @@ public class TooltipHandler extends AbstractGui {
     }
 
     private static boolean isShiftDown() {
-        long handle = Minecraft.getInstance().mainWindow.getHandle();
+        long handle = Minecraft.getInstance().getMainWindow().getHandle();
         return InputMappings.isKeyDown(handle, GLFW.GLFW_KEY_LEFT_SHIFT) || InputMappings.isKeyDown(handle, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 

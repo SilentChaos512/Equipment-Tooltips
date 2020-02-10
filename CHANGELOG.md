@@ -1,3 +1,6 @@
+## [1.4.0] - 2020-02-09
+- Updated for Minecraft 1.15.2
+
 ## [1.3.1] - 2019-07-25
 - Updated to 1.14.4 (should still work on 1.14.3)
 - Fix harvest level not showing on tools in some cases
