@@ -131,7 +131,7 @@ public class EquipmentStats {
 
         for (Entry<String, AttributeModifier> entry : multimap.entries()) {
             AttributeModifier mod = entry.getValue();
-            if (mod.getID().equals(ATTACK_DAMAGE_MODIFIER)) {
+            if (mod != null && ATTACK_DAMAGE_MODIFIER.equals(mod.getID())) {
                 return (float) mod.getAmount() + 1f;
             }
         }

@@ -1,3 +1,6 @@
+## [1.4.1] - 2020-06-11
+- Possibly fix a crash [#9]
+
 ## [1.4.0] - 2020-02-09
 - Updated for Minecraft 1.15.2
 
