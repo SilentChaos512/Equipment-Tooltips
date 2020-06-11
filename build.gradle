@@ -13,7 +13,7 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '2.0'
     id 'maven'
     id 'maven-publish'
-    id "com.jfrog.bintray" version "1.8.4"
+    id "com.jfrog.bintray" version "1.8.5"
     id "com.matthewprenger.cursegradle" version "1.2.0"
 }
 
@@ -77,6 +77,14 @@ minecraft {
 repositories {
     jcenter()
     mavenLocal()
+    // Silent Lib
+    maven {
+        url  "https://dl.bintray.com/silentchaos512/silent-lib"
+    }
+    // Silent Gear
+    maven {
+        url  "https://dl.bintray.com/silentchaos512/silent-gear"
+    }
 }
 
 configurations {
@@ -87,6 +95,10 @@ configurations {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.forge_version}"
 
+    // Silent Lib
+    compile fg.deobf("net.silentchaos512:silent-lib-${project.mc_version}:4.+") {
+        exclude module: 'forge'
+    }
     // Silent Gear
     compile("net.silentchaos512:silent-gear-${project.mc_version}:1.+") {
         exclude module: 'jei-1.15.2'

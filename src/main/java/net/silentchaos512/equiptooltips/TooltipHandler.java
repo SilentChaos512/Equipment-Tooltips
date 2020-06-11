@@ -1,10 +1,11 @@
 package net.silentchaos512.equiptooltips;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.util.InputMappings;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
@@ -56,22 +57,10 @@ public class TooltipHandler extends AbstractGui {
         Minecraft mc = Minecraft.getInstance();
         FontRenderer fontRenderer = event.getFontRenderer();
 
-        // Get currently equipped item
-        ItemStack currentEquip = ItemStack.EMPTY;
-        if (hoveredStats.getItemType() == ItemType.ARMOR) {
-            // Armor slot (may not be "armor")
-            EquipmentSlotType slot = ((ArmorItem) stack.getItem()).getEquipmentSlot();
-            for (ItemStack itemstack : mc.player.getArmorInventoryList()) {
-                Item item = itemstack.getItem();
-                if (!itemstack.isEmpty() && item instanceof ArmorItem && ((ArmorItem) item).getEquipmentSlot() == slot) {
-                    currentEquip = itemstack;
-                }
-            }
-        } else if (hoveredStats.getItemType() != ItemType.SGEAR_PART) {
-            // Tool or weapon
-            currentEquip = mc.player.getHeldItemMainhand();
-        }
+        if (mc.player == null) return;
 
+        // Get currently equipped item
+        ItemStack currentEquip = getEquippedItem(mc.player, stack, hoveredStats);
         EquipmentStats equippedStats = currentEquip.isEmpty() ? null : new EquipmentStats(currentEquip);
 
         double scale = 0.75;
@@ -81,9 +70,9 @@ public class TooltipHandler extends AbstractGui {
             y += event.getHeight() / scale + 28;
         }
 
-        GlStateManager.pushMatrix();
-        GlStateManager.color4f(1, 1, 1, 1);
-        GlStateManager.scaled(scale, scale, scale);
+        RenderSystem.pushMatrix();
+        RenderSystem.color4f(1, 1, 1, 1);
+        RenderSystem.scaled(scale, scale, scale);
 
         mc.textureManager.bindTexture(TEXTURE);
 
@@ -96,7 +85,25 @@ public class TooltipHandler extends AbstractGui {
 
         lastWidth = (int) (x * scale - event.getX());
 
-        GlStateManager.popMatrix();
+        RenderSystem.popMatrix();
+    }
+
+    private static ItemStack getEquippedItem(PlayerEntity player, ItemStack hoveredItem, EquipmentStats hoveredStats) {
+        if (hoveredStats.getItemType() == ItemType.ARMOR) {
+            // Armor slot (may not be "armor")
+            EquipmentSlotType slot = ((ArmorItem) hoveredItem.getItem()).getEquipmentSlot();
+            for (ItemStack itemstack : player.getArmorInventoryList()) {
+                Item item = itemstack.getItem();
+                if (!itemstack.isEmpty() && item instanceof ArmorItem && ((ArmorItem) item).getEquipmentSlot() == slot) {
+                    return itemstack;
+                }
+            }
+        } else if (hoveredStats.getItemType() != ItemType.SGEAR_PART) {
+            // Tool or weapon
+            return player.getHeldItemMainhand();
+        }
+
+        return ItemStack.EMPTY;
     }
 
     private int renderStat(Minecraft mc, FontRenderer fontRenderer, int x, int y, ItemStat stat, EquipmentStats hovered, @Nullable EquipmentStats equipped) {
@@ -113,7 +120,9 @@ public class TooltipHandler extends AbstractGui {
 
         // Draw stat value
         String text = formatStat(hoveredStat);
+        RenderSystem.pushMatrix();
         fontRenderer.drawStringWithShadow(text, x, y + 5, 0xFFFFFF);
+        RenderSystem.popMatrix();
         x += fontRenderer.getStringWidth(text);
         mc.textureManager.bindTexture(TEXTURE);
 
