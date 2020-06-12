@@ -154,7 +154,7 @@ public class EquipmentStats {
 
         for (Entry<String, AttributeModifier> entry : multimap.entries()) {
             AttributeModifier mod = entry.getValue();
-            if (mod.getID().equals(ATTACK_SPEED_MODIFIER)) {
+            if (mod != null && mod.getID().equals(ATTACK_SPEED_MODIFIER)) {
                 return (float) mod.getAmount() + 4f;
             }
         }
@@ -184,7 +184,7 @@ public class EquipmentStats {
         for (Entry<String, AttributeModifier> entry : multimap.entries()) {
             String key = entry.getKey();
             AttributeModifier mod = entry.getValue();
-            if (key.equals(SharedMonsterAttributes.ARMOR.getName()) && mod.getID().equals(uuid)) {
+            if (mod != null && key.equals(SharedMonsterAttributes.ARMOR.getName()) && mod.getID().equals(uuid)) {
                 return (float) mod.getAmount();
             }
         }
@@ -207,7 +207,7 @@ public class EquipmentStats {
         for (Entry<String, AttributeModifier> entry : multimap.entries()) {
             String key = entry.getKey();
             AttributeModifier mod = entry.getValue();
-            if (key.equals(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName())
+            if (mod != null && key.equals(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName())
                     && mod.getID().equals(uuid)) {
                 return (float) mod.getAmount();
             }
