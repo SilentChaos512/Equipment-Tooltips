@@ -1,3 +1,6 @@
+## [1.4.2] - 2020-06-12
+- Fix NPE crash with some items (Vaelzan) [#10, #9, #8]
+
 ## [1.4.1] - 2020-06-11
 - Possibly fix a crash [#9]
 
