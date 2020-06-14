@@ -1,6 +1,5 @@
 package net.silentchaos512.equiptooltips;
 
-import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -123,20 +122,31 @@ public class EquipmentStats {
 
     private static final UUID ATTACK_SPEED_MODIFIER = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
+    private static float getAttributeValue(ItemStack stack, EquipmentSlotType slot, UUID modifierId) {
+        for (Entry<String, AttributeModifier> entry : stack.getAttributeModifiers(slot).entries()) {
+            AttributeModifier mod = entry.getValue();
+            if (mod != null && modifierId.equals(mod.getID())) {
+                return (float) mod.getAmount();
+            }
+        }
+        return 0;
+    }
+
+    private static float getAttributeValue(ItemStack stack, EquipmentSlotType slot, UUID modifierId, String modifierKey) {
+        for (Entry<String, AttributeModifier> entry : stack.getAttributeModifiers(slot).entries()) {
+            AttributeModifier mod = entry.getValue();
+            if (mod != null && modifierId.equals(mod.getID()) && modifierKey.equals(entry.getKey())) {
+                return (float) mod.getAmount();
+            }
+        }
+        return 0;
+    }
+
     private static float getMeleeDamage(ItemStack stack) {
         if (SGearProxy.isMainPart(stack))
             return SGearProxy.getStat(stack, ItemStat.MELEE_DAMAGE.silentGearStat);
 
-        Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(EquipmentSlotType.MAINHAND);
-
-        for (Entry<String, AttributeModifier> entry : multimap.entries()) {
-            AttributeModifier mod = entry.getValue();
-            if (mod != null && ATTACK_DAMAGE_MODIFIER.equals(mod.getID())) {
-                return (float) mod.getAmount() + 1f;
-            }
-        }
-
-        return 0f;
+        return getAttributeValue(stack, EquipmentSlotType.MAINHAND, ATTACK_DAMAGE_MODIFIER) + 1f;
     }
 
     private static float getMagicDamage(ItemStack stack) {
@@ -149,17 +159,7 @@ public class EquipmentStats {
         if (SGearProxy.isMainPart(stack))
             return SGearProxy.getStat(stack, ItemStat.MELEE_SPEED.silentGearStat);
 
-        Multimap<String, AttributeModifier> multimap = stack
-                .getAttributeModifiers(EquipmentSlotType.MAINHAND);
-
-        for (Entry<String, AttributeModifier> entry : multimap.entries()) {
-            AttributeModifier mod = entry.getValue();
-            if (mod != null && mod.getID().equals(ATTACK_SPEED_MODIFIER)) {
-                return (float) mod.getAmount() + 4f;
-            }
-        }
-
-        return 0f;
+        return getAttributeValue(stack, EquipmentSlotType.MAINHAND, ATTACK_SPEED_MODIFIER) + 4f;
     }
 
     private static final UUID[] ARMOR_MODIFIERS = new UUID[]{
@@ -179,17 +179,7 @@ public class EquipmentStats {
         EquipmentSlotType slot = armorItem.getEquipmentSlot();
         UUID uuid = ARMOR_MODIFIERS[slot.getIndex()];
 
-        Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(slot);
-
-        for (Entry<String, AttributeModifier> entry : multimap.entries()) {
-            String key = entry.getKey();
-            AttributeModifier mod = entry.getValue();
-            if (mod != null && key.equals(SharedMonsterAttributes.ARMOR.getName()) && mod.getID().equals(uuid)) {
-                return (float) mod.getAmount();
-            }
-        }
-
-        return 0;
+        return getAttributeValue(stack, slot, uuid, SharedMonsterAttributes.ARMOR.getName());
     }
 
     private static float getToughness(ItemStack stack) {
@@ -202,18 +192,7 @@ public class EquipmentStats {
         EquipmentSlotType slot = armorItem.getEquipmentSlot();
         UUID uuid = ARMOR_MODIFIERS[slot.getIndex()];
 
-        Multimap<String, AttributeModifier> multimap = stack.getAttributeModifiers(slot);
-
-        for (Entry<String, AttributeModifier> entry : multimap.entries()) {
-            String key = entry.getKey();
-            AttributeModifier mod = entry.getValue();
-            if (mod != null && key.equals(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName())
-                    && mod.getID().equals(uuid)) {
-                return (float) mod.getAmount();
-            }
-        }
-
-        return 0f;
+        return getAttributeValue(stack, slot, uuid, SharedMonsterAttributes.ARMOR_TOUGHNESS.getName());
     }
 
     private static float getRangedDamage(ItemStack stack) {
